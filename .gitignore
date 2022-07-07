@@ -131,3 +131,8 @@ output-virtualbox-iso
 # Ignore grafanalib output
 /graphs/__pycache__/
 /graphs/*.json
+
+#allure results directory
+allure*/
+*results*
+.vscode
