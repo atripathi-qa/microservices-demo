@@ -1,4 +1,7 @@
-const video = require('wdio-video-reporter');
+const video = require('wdio-video-reporter')
+const HomePage = require('./test/pageobjects/home.page')
+const RegisterPage = require('./test/pageobjects/register.page')
+const testConfig = require('./test/test.config')
 
 exports.config = {
     //
@@ -23,12 +26,23 @@ exports.config = {
     // will be called from there.
     //
     specs: [
-        './test/specs/**/*.js'
+        './test/specs/*.js'
     ],
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
     ],
+    suites: {
+        HomePage: [
+            [
+                "./test/specs/filter.spec.js"
+            ]
+        ],
+        OtherPage: [
+            "./test/specs/login.spec.js",
+            "./test/specs/register.spec.js"
+        ]
+    },
     //
     // ============
     // Capabilities
@@ -86,9 +100,9 @@ exports.config = {
     // Define all options that are relevant for the WebdriverIO instance here
     //
     // Level of logging verbosity: trace | debug | info | warn | error | silent
-    sync: true,
+    // sync: true,
     
-    logLevel: 'error',
+    logLevel: 'info',
     //
     // Set specific log levels per logger
     // loggers:
@@ -128,7 +142,7 @@ exports.config = {
     // Services take over a specific job you don't want to take care of. They enhance
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
-    services: ['chromedriver'],
+    services: ['selenium-standalone'],
     
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
@@ -152,12 +166,13 @@ exports.config = {
     // see also: https://webdriver.io/docs/dot-reporter
     reporters: [
         [video, {
-            saveAllVideos: true,       // If true, also saves videos for successful test cases
+            saveAllVideos: false,       // If true, also saves videos for successful test cases
             videoSlowdownMultiplier: 3, // Higher to get slower videos, lower for faster videos [Value 1-100]
           }],
         ['allure', {
         outputDir: 'allure-results',
     }]],
+    reporterSyncInterval: 10 * 1000 ,
     //
     // Options to be passed to Mocha.
     // See the full list at http://mochajs.org/
@@ -170,11 +185,11 @@ exports.config = {
         /**
          * Setup the Chai assertion framework
          */
-        const chai = require("chai");
+        const chai = require("chai")
 
-        global.expect = chai.expect;
-        global.assert = chai.assert;
-        global.should = chai.should();
+        global.expect = chai.expect
+        global.assert = chai.assert
+        global.should = chai.should()
     },
     //
     // =====
@@ -237,6 +252,17 @@ exports.config = {
      */
     // beforeCommand: function (commandName, args) {
     // },
+    beforeSuite: async function (suite) {
+        if(!suite.file.includes('login.spec.js' || 'register.spec.js')){
+            await browser.maximizeWindow()
+            await HomePage.open()
+            await HomePage.loginBtnOne.waitForDisplayed()
+            await HomePage.loginBtnOne.click()
+            await HomePage.submitUsername(testConfig.user)
+            await HomePage.submitPassword(testConfig.password)
+            await HomePage.loginBtnTwo.click()
+        }
+    },
     /**
      * Hook that gets executed before the suite starts
      * @param {Object} suite suite details
@@ -256,6 +282,12 @@ exports.config = {
      * Hook that gets executed _after_ a hook within the suite starts (e.g. runs after calling
      * afterEach in Mocha)
      */
+     afterSuite: async function (suite) {
+        if(!suite.file.includes('login.spec.js' || 'register.spec.js')){
+            await RegisterPage.logOutBtn.click()
+            // await browser.pause(3000)
+        }
+    },
     // afterHook: function (test, context, { error, result, duration, passed, retries }) {
     // },
     /**

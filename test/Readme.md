@@ -6,6 +6,8 @@ Requirements
 NodeJS 10+
 Browser: Chrome/Firefox/MicrosoftEdge
 VS Code (IDE)
+Install allure commandline globally to access the allure report for the application.  
+npm install -g allure-commandline
 
 What is this repository for?
 This respository consists of an automated test for various scenarios of the sock shop application.
